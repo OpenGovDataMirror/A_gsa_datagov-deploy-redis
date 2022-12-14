@@ -1,0 +1,39 @@
+---
+dependency:
+  name: galaxy
+driver:
+  name: docker
+lint:
+  name: yamllint
+platforms:
+  - name: redis-trusty
+    image: ubuntu:trusty
+  - name: redis-bionic
+    image: ubuntu:bionic
+provisioner:
+  name: ansible
+  lint:
+    name: ansible-lint
+  inventory:
+    group_vars:
+      all:
+        # https://github.com/DavidWittman/ansible-redis/blob/21b0b6f9030275a2586baf591f322ce3348b2b2d/tasks/install.yml#L9
+        redis_travis_ci: true
+scenario:
+  name: default
+  test_sequence:
+    - lint
+    - destroy
+    - dependency
+    - syntax
+    - create
+    - prepare
+    - converge
+    # - idempotence # Disable idempodence, dependent role is not idempotent
+    - side_effect
+    - verify
+    - destroy
+verifier:
+  name: testinfra
+  lint:
+    name: flake8
